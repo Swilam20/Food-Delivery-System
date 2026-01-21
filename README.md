@@ -104,7 +104,6 @@
 - Support multiple payment modes:
   - Cash on delivery
   - Credit/debit card
-  - Apple Pay 
   - Wallet balance
 - Refund processing 
 - Invoice/receipt generation
