@@ -168,7 +168,7 @@ flowchart TD
     Available{Is order available?}
     PriceUpdated{Has price been updated?}
 
-    NotifyUpdate[Notify user with updates]
+    NotifyUpdate[Notify customer with updates]
     ToCart[Redirect to Cart]
     End([End])
 
@@ -196,11 +196,11 @@ flowchart TD
         Cash_Accept{Restaurant accepts order?}
 
         Cash_Dispatch[Assign delivery]
-        Cash_Success[Notify user: Order placed successfully]
+        Cash_Success[Notify customer: Order placed successfully]
         Cash_Track[Redirect to Order Tracking]
         Cash_End([End])
 
-        Cash_Reject[Notify user: Order rejected]
+        Cash_Reject[Notify customer: Order rejected]
         Cash_Restaurant[Redirect to Restaurant screen]
 
         Cash_Send --> Cash_Accept
@@ -216,7 +216,7 @@ flowchart TD
         Card_Authorize[Authorize payment]
         Card_Authorized{Authorization successful?}
 
-        Card_Fail[Notify user: Payment failed]
+        Card_Fail[Notify customer: Payment failed]
         Card_Checkout[Redirect to Checkout]
         Card_End([End])
 
@@ -225,7 +225,7 @@ flowchart TD
 
         Card_Capture[Capture authorized amount]
         Card_Dispatch[Assign delivery]
-        Card_Success[Notify user: Order placed successfully]
+        Card_Success[Notify customer: Order placed successfully]
         Card_Track[Redirect to Order Tracking]
 
         Card_Release[Release authorization]
@@ -255,8 +255,8 @@ flowchart TD
 sequenceDiagram
     autonumber
 
-    participant U as User
-    participant A as Mobile App
+    participant U as Customer
+    participant A as App
     participant B as Backend
     participant R as Restaurant
     participant P as Payment Gateway
@@ -275,7 +275,7 @@ sequenceDiagram
     else Order available
         B->>B: Check price updates
         alt Price updated
-            B->>A: Notify user with updated price
+            B->>A: Notify customer with updated price
             A->>U: Redirect to Cart
         else Price unchanged
             %% =========================
@@ -331,9 +331,9 @@ sequenceDiagram
 ```
 
 #### 3. Pseudocode
-```
-Pseudocode
 
+
+```Pseudocode
 PlaceOrder(Customer, Cart, PaymentMethod):
 
     for each item in Cart.items:
@@ -380,5 +380,93 @@ PlaceOrder(Customer, Cart, PaymentMethod):
 
     AssignDriver(Order)
     Notify(Customer, "Order placed successfully!")
-    return OrderTrackingPage```
-	
+    return OrderTrackingPage
+```
+
+#### 3. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+
+    CUSTOMER {
+        int cust_id PK
+        string cust_name
+        string cust_address
+        string cust_mobile_number
+    }
+
+    PAYMENTMETHOD {
+        int payment_id PK
+        int cust_id FK
+        string type
+        string token
+        string last4
+        string expiry
+    }
+
+    CART {
+        int cart_id PK
+        int cust_id FK
+    }
+
+    RESTAURANT {
+        int rest_id PK
+        string rest_address
+        string rest_status
+    }
+
+    MENU {
+        int menu_id PK
+        int rest_id FK
+    }
+
+    MENUITEM {
+        int menuitem_id PK
+        int menu_id FK
+        string name
+        float price
+        string item_status
+    }
+
+    ORDERS {
+        int o_id PK
+        int cust_id FK
+        int rest_id FK
+        string o_payment_method
+        string o_status
+        float o_total_amount
+    }
+
+    CARTMENUITEM {
+        int cart_id FK
+        int menuitem_id FK
+        int quantity
+    }
+
+    ORDERMENUITEM {
+        int o_id FK
+        int menuitem_id FK
+        int quantity
+        float unit_price_at_order
+    }
+
+    %% =========================
+    %% Relationships
+    %% =========================
+
+    CUSTOMER ||--o{ PAYMENTMETHOD : owns
+    CUSTOMER ||--|| CART : has
+    CUSTOMER ||--o{ ORDERS : places
+
+    RESTAURANT ||--|| MENU : has
+    MENU ||--o{ MENUITEM : contains
+
+    CART ||--o{ CARTMENUITEM : includes
+    MENUITEM ||--o{ CARTMENUITEM : selected_as
+
+    ORDERS ||--o{ ORDERMENUITEM : contains
+    MENUITEM ||--o{ ORDERMENUITEM : ordered_as
+
+    RESTAURANT ||--o{ ORDERS : receives
+
+```
